@@ -1,0 +1,16 @@
+{
+  "name": "8xai-design",
+  "version": "0.2.1",
+  "private": true,
+  "description": "Windows x64 distribution of the 8XAI Design stdio MCP server",
+  "os": ["win32"],
+  "cpu": ["x64"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/verify.mjs",
+    "start": ".\\bin\\8xai-design-mcp.exe",
+    "test": "node scripts/smoke-test.mjs"
+  }
+}

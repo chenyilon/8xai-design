@@ -1,0 +1,9 @@
+[mcp_servers.8xai-design]
+command = "C:/8xai-design/bin/8xai-design-mcp.exe"
+args = []
+startup_timeout_sec = 60
+tool_timeout_sec = 900
+
+[mcp_servers.8xai-design.env]
+XAI_ASSET_ROOT = "C:/8xai-design/assets"
+XAI_DATA_DIR = "C:/8xai-design/data"

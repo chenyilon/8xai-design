@@ -1,0 +1,23 @@
+# 素材处理
+
+- [面部宫格](face_grid.md)：制作人物脸部宫格素材
+- [常规放大](upscale.md)：常规放大图像并处理清晰度
+- [CF放大与肤质增强](upscale_enhanced.md)：增强放大图像细节
+- [CF全图高清放大](upscale_cf.md)：通过 CF 工作流按倍率放大
+- [肤质增强](skin_texture.md)：通过 CF 工作流增强皮肤纹理
+- [服装去皱](remove_wrinkles.md)：处理服装褶皱
+- [提取穿搭](extract_outfit.md)：从图片中提取服装素材
+- [服装转3D](clothing_3d.md)：制作服装立体展示效果
+- [立体下装](bottoms_3d.md)：制作下装立体展示效果
+- [提取背景](remove_people.md)：移除画面中的人物
+- [提取动作](extract_pose.md)：从人物图制作姿态参考素材
+- [提取布光](extract_lighting.md)：从参考图提取光照素材
+- [提取印花](extract_print.md)：提取服装印花素材
+- [移除路人](remove_passersby.md)：去掉背景路人并保留主体
+- [移除水印](remove_watermark.md)：处理有权编辑图像的水印区域
+- [单维模卡](model_card_single.md)：制作单人模特卡
+- [多维模卡](model_card.md)：制作模特卡展示图
+- [模卡三视图](model_card_triple.md)：制作三联模特卡
+- [半身扩全身](expand_to_fullbody.md)：从局部人物扩展到全身
+- [比例转换](ratio_conversion.md)：转换画幅并补充画面
+- [OOTD搭配](ootd.md)：按服饰槽位组合搭配图
