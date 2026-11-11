@@ -5,14 +5,19 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import './verify.mjs';
+
+const command = process.argv.slice(2);
+if (!command.length) {
+  await import('./verify.mjs');
+  command.push(fileURLToPath(new URL('../bin/8xai-design-mcp.exe', import.meta.url)));
+}
 
 const scratch = await mkdtemp(join(tmpdir(), '8xai-public-smoke-'));
 const environment = Object.fromEntries(
   Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('XAI_')));
 environment.XAI_DATA_DIR = scratch;
 environment.XAI_ASSET_ROOT = scratch;
-const child = spawn(fileURLToPath(new URL('../bin/8xai-design-mcp.exe', import.meta.url)), [], {
+const child = spawn(command[0], command.slice(1), {
   cwd: scratch,
   env: environment,
   stdio: ['pipe', 'pipe', 'pipe'],
@@ -71,6 +76,9 @@ try {
   for (const name of ['tabs_list', 'batch_plan', 'batch_submit', 'results_save']) {
     assert.ok(tools.some(tool => tool.name === name), `Missing ${name}`);
   }
+  const auth = await request('tools/call', { name: 'auth_status', arguments: {} });
+  assert.notEqual(auth.isError, true);
+  assert.equal(auth.structuredContent.authenticated, false);
   const catalog = await request('tools/call', { name: 'tabs_list', arguments: {} });
   assert.notEqual(catalog.isError, true);
   const plan = await request('tools/call', {
@@ -83,7 +91,18 @@ try {
   });
   assert.notEqual(plan.isError, true);
   assert.equal(plan.structuredContent.status, 'planned');
-  console.log(`Passed initialize, tools/list (${tools.length} tools), tabs_list and offline batch_plan.`);
+  const unconfirmed = await request('tools/call', {
+    name: 'batch_submit',
+    arguments: { plan_id: plan.structuredContent.plan_id, confirm: false }
+  });
+  assert.equal(unconfirmed.isError, true);
+  const unchanged = await request('tools/call', {
+    name: 'plan_status',
+    arguments: { plan_id: plan.structuredContent.plan_id }
+  });
+  assert.notEqual(unchanged.isError, true);
+  assert.equal(unchanged.structuredContent.status, 'planned');
+  console.log(`Passed initialize, tools/list (${tools.length} tools), unauthenticated status, tabs_list, offline batch_plan and unconfirmed submission refusal.`);
   console.log('No login, uploads, analysis or image-generation requests were submitted.');
 } finally {
   lines.close();

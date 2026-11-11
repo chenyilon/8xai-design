@@ -1,8 +1,8 @@
 # 8xai-design 0.2.1
 
-八象设计 MCP 的 **Windows x64 / stdio 发行包**。使用官方 0.2.1 可执行文件与公开操作指南，不使用 Java。
+八象设计 MCP 的 **Windows x64 发行包和 Linux 云端部署配置**。使用官方 0.2.1 产物，不使用 Java。
 
-此仓库提供二进制分发和部署检查脚本，**不是 0.2.1 源码仓库**。程序内部代码和生图提示词未在此公开。
+此仓库提供二进制分发和部署检查脚本，**不是 0.2.1 源码仓库**。Linux 镜像构建时从官方下载平台无关 Python wheel，并验证固定 SHA256；该上游 wheel 含可读 Python 源码。
 
 ## 运行条件
 
@@ -28,7 +28,7 @@ npm test
 
 `XAI_ASSET_ROOT` 指向素材目录，`XAI_DATA_DIR` 指向私有运行数据目录。创建这两个目录并确保进程有读写权限。登录凭据通过客户端内的认证工具配置，不要写入仓库。
 
-## MCPmarket 部署说明
+## MCPmarket 云端部署
 
 GitHub Source URL:
 
@@ -36,13 +36,24 @@ GitHub Source URL:
 https://github.com/chenyilon/8xai-design
 ```
 
-部署名称：`8xai-design`。Windows x64 构建命令：`npm run build`，启动命令：`npm --silent start`；传输方式为 stdio。
+部署名称：`8xai-design`，选择 GitHub Source。根目录 `Dockerfile` 构建 Linux / Python 3.12 镜像，启动命令为 `8xai-design-mcp`，使用 stdio。市场负责托管进程和客户端远程接入；无需公开本机端口。`package.json` 中的 npm 命令用于 Windows 本地包，不是云端启动命令。
 
-**市场云端兼容性尚未验证。** MCPmarket 的公开文档要求 GitHub 仓库提供构建脚本或 Dockerfile，但未说明支持 Windows 执行环境。若其构建或运行环境是 Linux，这个 Windows 发行包不能直接部署；构建检查会明确报错。仓库上传成功不等于市场部署成功。
+```sh
+docker build -t 8xai-design .
+docker run --rm -i 8xai-design
+```
 
-本包未提供 Linux 可执行文件、HTTP/SSE 服务或浏览器登录代理，也不提供通过 Wine 运行的兼容性保证。请先向市场确认 Windows x64 / stdio 支持；若只支持 Linux，需要八象提供 Linux 发行包，或在 Windows 主机运行并另行配置经过认证的远程 MCP 服务。
+容器以非 root 用户运行，仅复制构建依赖清单。Windows EXE、配置、素材和私有数据不会进入镜像。上游 Python wheel 的 SHA256 为 `0fc2c7b897604901f5b630c4869dba9c49af6e7b35651093ddb1d384f3df5b7d`，MCP SDK 固定为 `1.30.0`。
+
+登录后使用市场 Variables 中的个人秘密变量配置 `XAI_API_TOKEN`（不要提交到 GitHub）。也可调用 `auth_login`，但 Linux 必须显式传 `remember_password=false`，因为上游不支持 Linux 密码加密保存；不要让客户端沿用默认的 `true`。令牌文件权限为 `0600`，重建或重启后的数据持久性取决于市场存储。环境变量令牌退出需从市场移除相应变量，`auth_logout` 不会清除环境变量。
+
+此部署使用上游进程级账户与数据库。公开给其他用户之前，需确认市场为每位用户隔离进程、凭据和文件；本仓库没有新增多租户隔离层。
 
 云端进程不能直接读取你电脑的 `G:` 素材目录；不要将私人服装、模特、姿态图片或账户数据提交到公开仓库。
+
+上游工具读取云端文件路径，不提供图片上传工具。使用生图功能前，需要平台提供将素材放入 `/app/assets` 的途径；`results_save` 保存到云端目录，不会自动下载到客户端电脑。服务上线和远程工具可用不代表素材上传、结果取回、生图已验收。
+
+离线验证：`python -m pip install -r requirements.txt` 后运行 `node scripts/smoke-test.mjs python -m xai_mcp.server`。Linux CI 同时检查 Docker 构建，Windows CI 继续检查原始 EXE。测试只执行握手、工具列表、未登录状态、预演和未确认提交拒绝，不登录、不上传、不收费生图。
 
 官方部署文档：https://docs.mcpmarket.com/docs/mcp-servers/deploying-a-custom-mcp-server
 
@@ -52,6 +63,7 @@ https://github.com/chenyilon/8xai-design
 - `upstream-manifest.json`：原安装包的公开版本、能力与校验元数据。
 - `guidance/8xai-design-guide/`：官方公开操作指南。
 - `scripts/`、`examples/`：本仓库增加的校验、离线测试和无凭据配置示例。
+- `Dockerfile`、`requirements.txt`：官方 Python 发行包的 Linux 云端部署入口。
 
 官方发布地址：https://plugin.8xai.cn/releases/0.2.1/manifest.json
 
